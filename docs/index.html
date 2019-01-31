@@ -20,40 +20,42 @@
   const SingIn = Vue.component('sign-in', {
     template: `<div>
 <h1>Sign in</h1>
-<form v-on:submit="submit(event)">
+<form v-on:submit.prevent="submit">
   <div>
     <label for="username">Username:</label>
-    <input type="text" id="username" name="username" v-model="username">
+    <input type="text" id="username" name="username" v-model="username" v-bind:disabled="loading">
   </div>
   <div>
     <label for="password">Password:</label>
-    <input type="password" id="password" name="password" v-model="password">
+    <input type="password" id="password" name="password" v-model="password" v-bind:disabled="loading">
   </div>
   <div>
-    <button type="submit">Sign in</button>
+    <button type="submit" v-bind:disabled="loading">Sign in</button>
   </div>
 </form>
 </div>`,
     methods: {
-      submit: function (event) {
-        event.preventDefault()
+      submit() {
+        this.loading = true
         fetch('https://upend.herokuapp.com/me', {
           headers: {
             Authorization: `Basic ${btoa(`${this.username}:${this.password}`)}`
           }
         }).then(resp => resp.json()).then(resp => {
+          this.loading = false
           if (resp.hasOwnProperty('errors')) {
-            console.error(resp.errors[0].title)
+            alert(resp.errors[0].title)
           } else {
             console.log(resp.data)
           }
         })
       }
     },
-    data: function () {
+    data() {
       return {
         username: '',
-        password: ''
+        password: '',
+        loading: false
       }
     }
   })
